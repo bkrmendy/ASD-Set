@@ -35,7 +35,7 @@ private:
     size_type table_size { 0 };
     float max_lf{ 0.7 };
 
-    size_type hashfunction(const key_type& key) const {
+    size_type hash_of(const key_type& key) const {
         return hasher{}(key) % N;
     }
 
@@ -55,7 +55,11 @@ public:
         insert(ilist);
     }
 
-    template<typename InputIt> ADS_set(InputIt first, InputIt last) : ADS_set{} { insert(first, last); }
+    template<typename InputIt> ADS_set(InputIt first, InputIt last) {
+        rehash(N);
+        insert(first, last);
+    }
+
     ADS_set(const ADS_set& other) {
         rehash(N);
 
@@ -75,26 +79,18 @@ public:
     }
 
     ADS_set& operator=(const ADS_set& other) {
-        if (*this == other) {
+        if (this == &other) {
             return *this;
         }
 
-        rehash(N);
-        auto current = other.begin();
-        while (current != other.end()) {
-            insert_(*current);
-            current++;
-        }
-
-        this->size_ = other.size_;
-        this->max_lf = other.max_lf;
-
+        ADS_set tmp{other};
+        swap(tmp);
         return *this;
     }
 
     ADS_set& operator=(std::initializer_list<key_type> ilist) {
-        rehash(N);
-        insert(ilist);
+        ADS_set tmp{ilist};
+        swap(tmp);
         return *this;
     }
 
@@ -114,12 +110,10 @@ public:
     }
 
     iterator find(const key_type& key) const {
-        auto current = this->begin();
-        while (current != this->end()) {
-            if (key_equal{}(*current, key)) {
-                return current;
-            }
-            current++;
+        Node* ptr = find_(key);
+        if (ptr != nullptr) {
+            size_type idx{hash_of(key) };
+            return Iterator{ptr, &table[idx], &table[table_size]};
         }
         return this->end();
     }
@@ -135,10 +129,10 @@ public:
     }
 
     void swap(ADS_set& other) {
-        std::swap(this->curr_size, other->curr_size);
-        std::swap(this->table, other->table);
-        std::swap(this->table_size, other->table_size);
-        std::swap(this->max_lf, other->max_lf);
+        std::swap(this->size_, other.size_);
+        std::swap(this->table, other.table);
+        std::swap(this->table_size, other.table_size);
+        std::swap(this->max_lf, other.max_lf);
     }
 
     void insert(std::initializer_list<key_type> ilist) {
@@ -150,15 +144,16 @@ public:
         if (i != this->end()) {
             return { i, false };
         }
+        reserve(size_ + 1);
         auto it = insert_(key);
-        size_type idx{ hashfunction(key) };
-        return { Iterator{ it, &table[idx], &table[N] }, true };
+        size_type idx{hash_of(key) };
+        return { Iterator{ it, &table[idx], &table[table_size] }, true };
     }
 
     template<typename InputIt> void insert(InputIt first, InputIt last);
 
     size_type erase(const key_type& key) {
-        size_type idx{ hashfunction(key) };
+        size_type idx{hash_of(key) };
         Node* temp = table[idx].front;
         Node* previous = nullptr;
 
@@ -182,11 +177,11 @@ public:
     }
 
     const_iterator begin() const {
-        return Iterator{nullptr, &table[0], &table[N]};
+        return Iterator{&table[0], &table[table_size]};
     }
 
     const_iterator end() const {
-        return Iterator{nullptr, &table[N], &table[N]};
+        return Iterator{&table[table_size], &table[table_size]};
     }
 
     void dump(std::ostream& o = std::cerr) const;
@@ -214,8 +209,8 @@ public:
 
 template <typename Key, size_t N>
 typename ADS_set<Key, N>::Node* ADS_set<Key, N>::insert_(const key_type& key) {
-    size_type idx{ hashfunction(key) };
-    Node* temp = new Node;
+    size_type idx{hash_of(key) };
+    Node* temp = new Node{};
     temp->key = key;
     if (table[idx].front == nullptr) {
         temp->next = nullptr;
@@ -231,7 +226,7 @@ typename ADS_set<Key, N>::Node* ADS_set<Key, N>::insert_(const key_type& key) {
 
 template <typename Key, size_t N>
 typename ADS_set<Key, N>::Node* ADS_set<Key, N>::find_(const key_type& key) const {
-    size_type idx{ hashfunction(key) };
+    size_type idx{hash_of(key) };
     Node* temp = table[idx].front;
     while (temp) {
         if (key_equal{}(temp->key, key)) {
@@ -246,7 +241,6 @@ template <typename Key, size_t N>
 template<typename InputIt> void ADS_set<Key, N>::insert(InputIt first, InputIt last) {
     for (auto it{ first }; it != last; ++it) {
         if (!count(*it)) {
-            reserve(size_ + 1);
             insert_(*it);
         }
     }
@@ -267,7 +261,8 @@ void ADS_set<Key, N>::reserve(size_type requested_size) {
 
 template <typename Key, size_t N>
 void ADS_set<Key, N>::rehash(size_type n) {
-    size_type new_table_size = std::max(N, std::max(n,size_type(size_ / max_lf)));
+    size_type old_table_size = this->table_size;
+    size_type new_table_size = std::max(N, std::max(n, size_type(size_ / max_lf)));
 
     list* new_table{ new list[new_table_size] };
 
@@ -277,7 +272,7 @@ void ADS_set<Key, N>::rehash(size_type n) {
     this->table_size = new_table_size;
     this->table = new_table;
 
-    for (size_type idx = 0; idx < table_size; ++idx) {
+    for (size_type idx = 0; idx < old_table_size; ++idx) {
         Node* temp = old_table[idx].front;
         while (temp != nullptr) {
             insert_(temp->key);
@@ -289,7 +284,6 @@ void ADS_set<Key, N>::rehash(size_type n) {
 }
 
 template <typename Key, size_t N>
-
 void ADS_set<Key, N>::dump(std::ostream& o) const {
     o << "curr_size = " << size_ << " table_size = " << N << "\n";
     for (size_type idx{ 0 }; idx < N; ++idx) {
@@ -302,8 +296,6 @@ void ADS_set<Key, N>::dump(std::ostream& o) const {
         o << "\n";
     }
 }
-
-
 
 template <typename Key, size_t N>
 class ADS_set<Key, N>::Iterator {
@@ -319,11 +311,12 @@ private:
     list* end;
 
     void skipToNext() {
-        if (listPos == nullptr) {
+        if (tablePos == end) {
+            listPos = nullptr;
             return;
         }
 
-        if (listPos->next != nullptr) {
+        if (listPos != nullptr and listPos->next != nullptr) {
             listPos = listPos->next;
             return;
         }
@@ -340,10 +333,6 @@ private:
     }
 
     void skipToFirst() {
-        if (listPos != nullptr) {
-            return;
-        }
-
         while (tablePos != end) {
             if (tablePos->front != nullptr) {
                 listPos = tablePos->front;
@@ -355,16 +344,11 @@ private:
 
 public:
 
-    Iterator() :
-            listPos{ nullptr },
-            tablePos{ nullptr },
-            end{ nullptr } { }
+    Iterator() : listPos{ nullptr }, tablePos{ nullptr }, end{ nullptr } { }
 
-    Iterator(Node* listPos, list* tablePos, list* end) :
-            listPos{ listPos },
-            tablePos{ tablePos },
-            end{ end }
-    {
+    Iterator(Node* listPos, list* tablePos, list* end) : listPos{ listPos }, tablePos{ tablePos }, end{ end } { }
+
+    Iterator(list* tablePos, list* end) : listPos{nullptr}, tablePos{tablePos}, end{end} {
         skipToFirst();
     }
 
@@ -383,7 +367,7 @@ public:
 
     Iterator operator++(int) {
         auto rc{ *this };
-        ++* this;
+        skipToNext();
         return rc;
     }
 
