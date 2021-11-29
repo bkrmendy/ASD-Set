@@ -74,7 +74,15 @@ public:
     }
 
     ~ADS_set() {
-        clear();
+        for (size_type idx = 0; idx < table_size; idx++) {
+            Node* current = table[idx].front;
+            while (current != nullptr) {
+                Node* next = current->next;
+                delete current;
+                current = next;
+            }
+            table[idx].front = nullptr;
+        }
         delete[] table;
     }
 
@@ -119,15 +127,8 @@ public:
     }
 
     void clear() {
-        for (size_type idx = 0; idx < table_size; idx++) {
-            Node* current = table[idx].front;
-            while (current != nullptr) {
-                current = current->next;
-                delete current;
-            }
-            table[idx].front = nullptr;
-        }
-        this->size_ = 0;
+        ADS_set tmp;
+        swap(tmp);
     }
 
     void swap(ADS_set& other) {
@@ -163,16 +164,17 @@ public:
             previous = temp;
             temp = temp->next;
         }
-        if (temp == nullptr) { // item not found
+
+        if (temp == nullptr) {
             return 0;
         }
-        if (previous == nullptr) { // meaning its the 1st node in the list
+
+        if (previous == nullptr) {
             table[idx].front = temp->next;
-            delete temp;
-            --size_;
-            return 1;
+        } else {
+            previous->next = temp->next;
         }
-        previous->next = temp->next; // found element is at any other place in the list
+
         delete temp;
         --size_;
         return 1;

@@ -69,15 +69,15 @@ include CMakeFiles/ads_set.dir/flags.make
 CMakeFiles/ads_set.dir/btest.cpp.o: CMakeFiles/ads_set.dir/flags.make
 CMakeFiles/ads_set.dir/btest.cpp.o: ../btest.cpp
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/berci/CLionProjects/ads_set/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/ads_set.dir/btest.cpp.o"
-	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/ads_set.dir/btest.cpp.o -c /Users/berci/CLionProjects/ads_set/btest.cpp
+	/usr/local/opt/llvm/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/ads_set.dir/btest.cpp.o -c /Users/berci/CLionProjects/ads_set/btest.cpp
 
 CMakeFiles/ads_set.dir/btest.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/ads_set.dir/btest.cpp.i"
-	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/berci/CLionProjects/ads_set/btest.cpp > CMakeFiles/ads_set.dir/btest.cpp.i
+	/usr/local/opt/llvm/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/berci/CLionProjects/ads_set/btest.cpp > CMakeFiles/ads_set.dir/btest.cpp.i
 
 CMakeFiles/ads_set.dir/btest.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/ads_set.dir/btest.cpp.s"
-	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/berci/CLionProjects/ads_set/btest.cpp -o CMakeFiles/ads_set.dir/btest.cpp.s
+	/usr/local/opt/llvm/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/berci/CLionProjects/ads_set/btest.cpp -o CMakeFiles/ads_set.dir/btest.cpp.s
 
 # Object files for target ads_set
 ads_set_OBJECTS = \

@@ -4,7 +4,7 @@
 	<Project>
 		<Option title="ads_set"/>
 		<Option makefile_is_custom="1"/>
-		<Option compiler="gcc"/>
+		<Option compiler="clang"/>
 		<Option virtualFolders="CMake Files\;"/>
 		<Build>
 			<Target title="all">
@@ -42,9 +42,12 @@
 				<Option working_dir="/Users/berci/CLionProjects/ads_set/cmake-build-debug"/>
 				<Option object_output="./"/>
 				<Option type="1"/>
-				<Option compiler="gcc"/>
+				<Option compiler="clang"/>
 				<Compiler>
-					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1"/>
+					<Add directory="/usr/local/opt/llvm/bin/../include/c++/v1"/>
+					<Add directory="/usr/local/Cellar/llvm/13.0.0_1/lib/clang/13.0.0/include"/>
+					<Add directory="/Library/Developer/CommandLineTools/SDKs/MacOSX12.sdk/usr/include"/>
+					<Add directory="/Library/Developer/CommandLineTools/SDKs/MacOSX12.sdk/System/Library/Frameworks"/>
 					<Add directory="/usr/local/include"/>
 					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/13.0.0/include"/>
 					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"/>
@@ -63,9 +66,12 @@
 				<Option working_dir="/Users/berci/CLionProjects/ads_set/cmake-build-debug"/>
 				<Option object_output="./"/>
 				<Option type="1"/>
-				<Option compiler="gcc"/>
+				<Option compiler="clang"/>
 				<Compiler>
-					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1"/>
+					<Add directory="/usr/local/opt/llvm/bin/../include/c++/v1"/>
+					<Add directory="/usr/local/Cellar/llvm/13.0.0_1/lib/clang/13.0.0/include"/>
+					<Add directory="/Library/Developer/CommandLineTools/SDKs/MacOSX12.sdk/usr/include"/>
+					<Add directory="/Library/Developer/CommandLineTools/SDKs/MacOSX12.sdk/System/Library/Frameworks"/>
 					<Add directory="/usr/local/include"/>
 					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/13.0.0/include"/>
 					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"/>
