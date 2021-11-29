@@ -36,11 +36,11 @@ private:
     float max_lf{ 0.7 };
 
     size_type hash_of(const key_type& key) const {
-        return hasher{}(key) % N;
+        return hasher{}(key) % table_size;
     }
 
     void reserve(size_type requested_size);
-    void rehash(size_type n);
+    void rehash(size_type requested_table_size);
     Node* insert_(const key_type& key);
     Node* find_(const key_type& key) const;
 
@@ -61,7 +61,7 @@ public:
     }
 
     ADS_set(const ADS_set& other) {
-        rehash(N);
+        rehash(other.size_);
 
         auto current = other.begin();
         while (current != other.end()) {
@@ -119,13 +119,15 @@ public:
     }
 
     void clear() {
-        for (size_type idx = 0; idx < N; idx++) {
+        for (size_type idx = 0; idx < table_size; idx++) {
             Node* current = table[idx].front;
             while (current != nullptr) {
                 current = current->next;
                 delete current;
             }
+            table[idx].front = nullptr;
         }
+        this->size_ = 0;
     }
 
     void swap(ADS_set& other) {
@@ -215,8 +217,7 @@ typename ADS_set<Key, N>::Node* ADS_set<Key, N>::insert_(const key_type& key) {
     if (table[idx].front == nullptr) {
         temp->next = nullptr;
         table[idx].front = temp;
-    }
-    else {
+    } else {
         temp->next = table[idx].front;
         table[idx].front = temp;
     }
@@ -240,7 +241,7 @@ typename ADS_set<Key, N>::Node* ADS_set<Key, N>::find_(const key_type& key) cons
 template <typename Key, size_t N>
 template<typename InputIt> void ADS_set<Key, N>::insert(InputIt first, InputIt last) {
     for (auto it{ first }; it != last; ++it) {
-        if (!count(*it)) {
+        if (count(*it) == 0) {
             insert_(*it);
         }
     }
@@ -260,9 +261,9 @@ void ADS_set<Key, N>::reserve(size_type requested_size) {
 }
 
 template <typename Key, size_t N>
-void ADS_set<Key, N>::rehash(size_type n) {
+void ADS_set<Key, N>::rehash(size_type requested_table_size) {
     size_type old_table_size = this->table_size;
-    size_type new_table_size = std::max(N, std::max(n, size_type(size_ / max_lf)));
+    size_type new_table_size = std::max(N, std::max(requested_table_size, size_type(size_ / max_lf)));
 
     list* new_table{ new list[new_table_size] };
 
@@ -275,8 +276,13 @@ void ADS_set<Key, N>::rehash(size_type n) {
     for (size_type idx = 0; idx < old_table_size; ++idx) {
         Node* temp = old_table[idx].front;
         while (temp != nullptr) {
-            insert_(temp->key);
-            temp = temp->next;
+            auto key = temp->key;
+            auto next = temp->next;
+
+            delete temp;
+
+            insert_(key);
+            temp = next;
         }
     }
 
@@ -286,7 +292,7 @@ void ADS_set<Key, N>::rehash(size_type n) {
 template <typename Key, size_t N>
 void ADS_set<Key, N>::dump(std::ostream& o) const {
     o << "curr_size = " << size_ << " table_size = " << N << "\n";
-    for (size_type idx{ 0 }; idx < N; ++idx) {
+    for (size_type idx{ 0 }; idx < table_size; ++idx) {
         o << idx << ": ";
         Node* temp = table[idx].front;
         while (temp != nullptr) {
@@ -312,24 +318,23 @@ private:
 
     void skipToNext() {
         if (tablePos == end) {
-            listPos = nullptr;
             return;
         }
 
-        if (listPos != nullptr and listPos->next != nullptr) {
+        if (listPos->next != nullptr) {
             listPos = listPos->next;
             return;
         }
 
+        listPos = nullptr;
+        tablePos++;
         while (tablePos != end) {
-            tablePos++;
             if (tablePos->front != nullptr) {
                 listPos = tablePos->front;
                 return;
             }
+            tablePos++;
         }
-
-        listPos = nullptr;
     }
 
     void skipToFirst() {
@@ -340,6 +345,7 @@ private:
             }
             tablePos++;
         }
+        listPos = nullptr;
     }
 
 public:
@@ -372,7 +378,9 @@ public:
     }
 
     friend bool operator==(const Iterator& lhs, const Iterator& rhs) {
-        return lhs.tablePos == rhs.tablePos and lhs.listPos == rhs.listPos;
+        return (lhs.tablePos == rhs.tablePos
+                and lhs.listPos == rhs.listPos
+                and lhs.end == rhs.end);
     }
 
     friend bool operator!=(const Iterator& lhs, const Iterator& rhs) {
