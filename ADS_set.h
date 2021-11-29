@@ -61,7 +61,7 @@ public:
     }
 
     ADS_set(const ADS_set& other) {
-        rehash(other.size_);
+        rehash(other.table_size);
 
         auto current = other.begin();
         while (current != other.end()) {
@@ -189,17 +189,14 @@ public:
     void dump(std::ostream& o = std::cerr) const;
 
     friend bool operator==(const ADS_set& lhs, const ADS_set& rhs) {
-        auto currLeft = lhs.begin();
-        auto currRight = rhs.begin();
-        while (currLeft != lhs.end() and currRight != rhs.end()) {
-            if (!key_equal{}(*currLeft, *currRight)) {
+        if (lhs.size_ != rhs.size_) {
+            return false;
+        }
+
+        for (const auto &k : rhs) {
+            if (lhs.count(k) < 1) {
                 return false;
             }
-            currLeft++;
-            currRight++;
-        }
-        if (currLeft != lhs.end() or currRight != rhs.end()) {
-            return false;
         }
         return true;
     }
@@ -242,6 +239,7 @@ template <typename Key, size_t N>
 template<typename InputIt> void ADS_set<Key, N>::insert(InputIt first, InputIt last) {
     for (auto it{ first }; it != last; ++it) {
         if (count(*it) == 0) {
+            reserve(size_ + 1);
             insert_(*it);
         }
     }
