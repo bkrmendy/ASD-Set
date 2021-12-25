@@ -30,9 +30,6 @@ private:
         Node* front = nullptr;
     };
 
-    bool erased = false;
-    key_type lastErased;
-
     list* table{ nullptr };
     size_type size_{ 0 };
     size_type table_size{ 0 };
@@ -120,59 +117,6 @@ public:
                : 1;
     }
 
-    /*size_type z() const {
-        size_t sum = 0;
-        if (!erased) {
-            throw std::runtime_error("No Element has been erased before. ");
-        }
-        for (size_t idx = 0; idx < table_size; idx++) {
-            Node* temp = table[idx].front;
-            while (temp) {
-                if (std::less<key_type>{}(temp->key, lastErased)) {
-                    sum++;
-                }
-                temp = temp->next;
-            }
-        }
-        return sum;
-    }*/
-
-    friend double z(const ADS_set& a, const ADS_set& b) {
-        if (a.size_ == 0 and b.size_ == 0) {
-            return 1;
-        }
-        size_t schnitt = 0;
-        if (a.size_ <= b.size_) {
-            for (size_t i = 0; i < a.table_size; i++) {
-                Node* temp = a.table[i].front;
-                while (temp != nullptr) {
-                    if (b.count(temp->key)) {
-                        schnitt++;
-                    }
-                    temp = temp->next;
-                }
-            }
-            std::cout << "Schnitt: " << schnitt << std::endl;
-            return (double)schnitt/ (a.size_ + b.size_ - schnitt);
-        }
-        else {
-            for (size_t i = 0; i < b.table_size; i++) {
-                Node* temp = b.table[i].front;
-                while (temp) {
-                    if (a.count(temp->key)) {
-                        schnitt++;
-                        break;
-                    }
-                    temp = temp->next;
-                }
-            }
-            std::cout << "Schnitt: " << schnitt << std::endl;
-            return (double)schnitt / (a.size_ + b.size_ - schnitt);
-        }
-    }
-
-
-
     iterator find(const key_type& key) const {
         Node* ptr = find_(key);
         if (ptr != nullptr) {
@@ -224,9 +168,6 @@ public:
         if (temp == nullptr) {
             return 0;
         }
-
-        lastErased = key;
-        erased = true;
 
         if (previous == nullptr) {
             table[idx].front = temp->next;
