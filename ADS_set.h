@@ -54,6 +54,7 @@ private:
         std::swap(this->table_size, other.table_size);
         std::swap(this->max_lf, other.max_lf);
         std::swap(this->stats_, other.stats_);
+        std::swap(this->count_, other.count_);
     }
 
     void reserve(size_type requested_size);
