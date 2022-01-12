@@ -30,13 +30,30 @@ private:
         Node* front = nullptr;
     };
 
+    struct Stats {
+        size_t clear;
+        size_t swap_global;
+        size_t swap_local;
+    };
+
     list* table{ nullptr };
     size_type size_{ 0 };
     size_type table_size{ 0 };
     float max_lf{ 0.7 };
 
+    Stats stats_ = { .clear = 0, .swap_global = 0, .swap_local = 0 };
+    size_t count_ = 0;
+
     size_type hash_of(const key_type& key) const {
         return hasher{}(key) % table_size;
+    }
+
+    void swapI(const ADS_set& other) {
+        std::swap(this->size_, other.size_);
+        std::swap(this->table, other.table);
+        std::swap(this->table_size, other.table_size);
+        std::swap(this->max_lf, other.max_lf);
+        std::swap(this->stats_, other.stats_);
     }
 
     void reserve(size_type requested_size);
@@ -92,13 +109,14 @@ public:
         }
 
         ADS_set tmp{ other };
-        swap(tmp);
+        swapI(tmp);
+        this->stats_ = { .clear = 0, .swap_local = 0, .swap_global = 0};
         return *this;
     }
 
     ADS_set& operator=(std::initializer_list<key_type> ilist) {
         ADS_set tmp{ ilist };
-        swap(tmp);
+        swapI(tmp);
         return *this;
     }
 
@@ -108,6 +126,13 @@ public:
 
     bool empty() const {
         return size_ == 0;
+    }
+
+    std::pair<size_t,size_t> y(size_t idx) const {
+        if (idx == 0) return { this->stats_.swap_local, this->count_ };
+        if (idx == 1) return { this->stats_.swap_global, this->count_ };
+        if (idx == 2) return { this->stats_.clear, this->count_ };
+        return { -1, -1 };
     }
 
     size_type count(const key_type& key) const {
@@ -127,15 +152,17 @@ public:
     }
 
     void clear() {
+        this->count_ += this->size_;
+        this->stats_.clear++;
         ADS_set tmp;
-        swap(tmp);
+        swaIp(tmp);
     }
 
     void swap(ADS_set& other) {
-        std::swap(this->size_, other.size_);
-        std::swap(this->table, other.table);
-        std::swap(this->table_size, other.table_size);
-        std::swap(this->max_lf, other.max_lf);
+        this->count_ += this->size_;
+        this->stats_.swap_local++;
+        other.stats_.swap_local++;
+        this->swapI(other);
     }
 
     void insert(std::initializer_list<key_type> ilist) {
@@ -209,11 +236,15 @@ public:
     friend bool operator!=(const ADS_set& lhs, const ADS_set& rhs) {
         return !(lhs == rhs);
     }
+
+    friend void swap(const ADS_set<Key, N>& v1, ADS_set<Key, N>& v2) {
+        v1.count_ += v1.size_;
+        v2.count_ += v2.size_;
+        v1.stats_.swap_global++;
+        v2.stats_.swap_global++;
+        v1.swap(v2);
+    }
 };
-
-
-
-
 
 template <typename Key, size_t N>
 typename ADS_set<Key, N>::Node* ADS_set<Key, N>::insert_(const key_type& key) {
